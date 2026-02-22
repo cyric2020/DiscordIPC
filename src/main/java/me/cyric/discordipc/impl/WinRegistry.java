@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.impl;
+package me.cyric.discordipc.impl;
 
 import net.lenni0451.reflect.Methods;
 

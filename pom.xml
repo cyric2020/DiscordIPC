@@ -3,16 +3,18 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.jagrosh</groupId>
+    <groupId>me.cyric</groupId>
     <artifactId>DiscordIPC</artifactId>
     <version>0.6.0</version>
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- Source: https://mvnrepository.com/artifact/com.badlogicgames.gdx/gdx -->
         <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.13.2</version>
+            <groupId>com.badlogicgames.gdx</groupId>
+            <artifactId>gdx</artifactId>
+            <version>1.14.0</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

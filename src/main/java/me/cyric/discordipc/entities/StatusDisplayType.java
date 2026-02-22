@@ -1,4 +1,4 @@
-package com.jagrosh.discordipc.entities;
+package me.cyric.discordipc.entities;
 
 /**
  * Constants representing various Discord client status display types,

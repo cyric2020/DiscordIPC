@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities;
+package me.cyric.discordipc.entities;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.badlogic.gdx.utils.JsonValue;
 
 import java.util.Objects;
 
@@ -54,7 +52,7 @@ public class RichPresence {
     private final String matchSecret;
     private final String joinSecret;
     private final String spectateSecret;
-    private final JsonArray buttons;
+    private final JsonValue buttons; // must be array
     private final boolean instance;
 
     public RichPresence(ActivityType activityType, StatusDisplayType statusDisplayType,
@@ -65,7 +63,7 @@ public class RichPresence {
                         String smallImageKey, String smallImageText, String smallImageUrl,
                         String partyId, int partySize, int partyMax, PartyPrivacy partyPrivacy,
                         String matchSecret, String joinSecret, String spectateSecret,
-                        JsonArray buttons, boolean instance) {
+                        JsonValue buttons, boolean instance) {
         this.activityType = activityType;
         this.statusDisplayType = statusDisplayType;
         this.state = state;
@@ -88,123 +86,128 @@ public class RichPresence {
         this.matchSecret = matchSecret;
         this.joinSecret = joinSecret;
         this.spectateSecret = spectateSecret;
+        if (!buttons.isArray()) {
+            throw new IllegalArgumentException("buttons must be an array");
+        }
         this.buttons = buttons;
         this.instance = instance;
     }
 
     /**
-     * Constructs a {@link JsonObject} representing a payload to send to discord
+     * Constructs a {@link JsonValue} representing a payload to send to discord
      * to update a user's Rich Presence.
      *
      * <p>This is purely internal, and should not ever need to be called outside
      * the library.
      *
-     * @return A JSONObject payload for updating a user's Rich Presence.
+     * @return A JsonValue payload for updating a user's Rich Presence.
      */
-    public JsonObject toJson() {
-        JsonObject timestamps = new JsonObject(),
-                assets = new JsonObject(),
-                party = new JsonObject(),
-                secrets = new JsonObject(),
-                finalObject = new JsonObject();
+    public JsonValue toJson() {
+        JsonValue timestamps = new JsonValue(JsonValue.ValueType.object),
+                assets = new JsonValue(JsonValue.ValueType.object),
+                party = new JsonValue(JsonValue.ValueType.object),
+                secrets = new JsonValue(JsonValue.ValueType.object),
+                finalObject = new JsonValue(JsonValue.ValueType.object);
 
         if (startTimestamp > 0) {
-            timestamps.addProperty("start", startTimestamp);
+            timestamps.addChild("start", new JsonValue(startTimestamp));
 
             if (endTimestamp > startTimestamp) {
-                timestamps.addProperty("end", endTimestamp);
+                timestamps.addChild("end", new JsonValue(endTimestamp));
             }
         }
 
         if (largeImageKey != null && !largeImageKey.isEmpty()) {
-            assets.addProperty("large_image", largeImageKey);
+            assets.addChild("large_image", new JsonValue(largeImageKey));
 
             if (largeImageText != null && !largeImageText.isEmpty()) {
-                assets.addProperty("large_text", largeImageText);
+                assets.addChild("large_text", new JsonValue(largeImageText));
             }
             if (largeImageUrl != null && !largeImageUrl.isEmpty()) {
-                assets.addProperty("large_url", largeImageUrl);
+                assets.addChild("large_url", new JsonValue(largeImageUrl));
             }
         }
 
         if (smallImageKey != null && !smallImageKey.isEmpty()) {
-            assets.addProperty("small_image", smallImageKey);
+            assets.addChild("small_image", new JsonValue(smallImageKey));
 
             if (smallImageText != null && !smallImageText.isEmpty()) {
-                assets.addProperty("small_text", smallImageText);
+                assets.addChild("small_text", new JsonValue(smallImageText));
             }
             if (smallImageUrl != null && !smallImageUrl.isEmpty()) {
-                assets.addProperty("small_url", smallImageUrl);
+                assets.addChild("small_url", new JsonValue(smallImageUrl));
             }
         }
 
         if ((partyId != null && !partyId.isEmpty()) ||
                 (partySize > 0 && partyMax > 0)) {
             if (partyId != null && !partyId.isEmpty()) {
-                party.addProperty("id", partyId);
+                party.addChild("id", new JsonValue(partyId));
             }
 
-            JsonArray partyData = new JsonArray();
+            JsonValue partyData = new JsonValue(JsonValue.ValueType.array);
 
             if (partySize > 0) {
-                partyData.add(new JsonPrimitive(partySize));
+                partyData.addChild(new JsonValue(partySize));
 
                 if (partyMax >= partySize) {
-                    partyData.add(new JsonPrimitive(partyMax));
+                    partyData.addChild(new JsonValue(partyMax));
                 }
             }
-            party.add("size", partyData);
-            party.add("privacy", new JsonPrimitive(partyPrivacy.ordinal()));
+
+            party.addChild("size", partyData);
+            party.addChild("privacy", new JsonValue(partyPrivacy.ordinal()));
         }
 
+        System.out.println("Join secret: " + joinSecret);
         if (joinSecret != null && !joinSecret.isEmpty()) {
-            secrets.addProperty("join", joinSecret);
+            secrets.addChild("join", new JsonValue(joinSecret));
         }
         if (spectateSecret != null && !spectateSecret.isEmpty()) {
-            secrets.addProperty("spectate", spectateSecret);
+            secrets.addChild("spectate", new JsonValue(spectateSecret));
         }
         if (matchSecret != null && !matchSecret.isEmpty()) {
-            secrets.addProperty("match", matchSecret);
+            secrets.addChild("match", new JsonValue(matchSecret));
         }
 
-        finalObject.addProperty("type", activityType.ordinal());
-        finalObject.addProperty("status_display_type", statusDisplayType.ordinal());
+        finalObject.addChild("type", new JsonValue(activityType.ordinal()));
+        finalObject.addChild("status_display_type", new JsonValue(statusDisplayType.ordinal()));
 
         if (state != null && !state.isEmpty()) {
-            finalObject.addProperty("state", state);
+            finalObject.addChild("state", new JsonValue(state));
 
             if (stateUrl != null && !stateUrl.isEmpty()) {
-                finalObject.addProperty("state_url", stateUrl);
+                finalObject.addChild("state_url", new JsonValue(stateUrl));
             }
         }
         if (details != null && !details.isEmpty()) {
-            finalObject.addProperty("details", details);
+            finalObject.addChild("details", new JsonValue(details));
 
             if (detailsUrl != null && !detailsUrl.isEmpty()) {
-                finalObject.addProperty("details_url", detailsUrl);
+                finalObject.addChild("details_url", new JsonValue(detailsUrl));
             }
         }
 
         if (name != null && !name.isEmpty()) {
-            finalObject.addProperty("name", name);
+            finalObject.addChild("name", new JsonValue(name));
         }
 
         if (timestamps.has("start")) {
-            finalObject.add("timestamps", timestamps);
+            finalObject.addChild("timestamps", timestamps);
         }
         if (assets.has("large_image")) {
-            finalObject.add("assets", assets);
+            finalObject.addChild("assets", assets);
         }
-        if (party.has("id")) {
-            finalObject.add("party", party);
+        if (party.has("id") || party.has("size")) {
+            finalObject.addChild("party", party);
         }
         if (secrets.has("join") || secrets.has("spectate") || secrets.has("match")) {
-            finalObject.add("secrets", secrets);
+            finalObject.addChild("secrets", secrets);
         }
-        if (buttons != null && !buttons.isJsonNull() && buttons.size() >= MIN_ALLOWED_BUTTONS && buttons.size() <= MAX_ALLOWED_BUTTONS) {
-            finalObject.add("buttons", buttons);
+        if (buttons != null && !buttons.isNull() && buttons.size() >= MIN_ALLOWED_BUTTONS && buttons.size() <= MAX_ALLOWED_BUTTONS) {
+            finalObject.addChild("buttons", buttons);
         }
-        finalObject.addProperty("instance", instance);
+        finalObject.addChild("instance", new JsonValue(instance));
 
         return finalObject;
     }
@@ -294,7 +297,7 @@ public class RichPresence {
         private String matchSecret;
         private String joinSecret;
         private String spectateSecret;
-        private JsonArray buttons;
+        private JsonValue buttons;
         private boolean instance;
 
         /**
@@ -598,7 +601,7 @@ public class RichPresence {
          * @param buttons The new array of button objects to use
          * @return This Builder.
          */
-        public Builder setButtons(JsonArray buttons) {
+        public Builder setButtons(JsonValue buttons) {
             this.buttons = buttons;
             return this;
         }

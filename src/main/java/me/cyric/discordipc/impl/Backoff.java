@@ -1,4 +1,4 @@
-package com.jagrosh.discordipc.impl;
+package me.cyric.discordipc.impl;
 
 import java.util.Random;
 

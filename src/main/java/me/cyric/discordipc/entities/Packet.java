@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities;
+package me.cyric.discordipc.entities;
 
-import com.google.gson.JsonObject;
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.IPCListener;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.IPCListener;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
@@ -31,30 +33,30 @@ import java.nio.ByteBuffer;
  */
 public class Packet {
     private final OpCode op;
-    private final JsonObject data;
+    private final JsonValue data;
     private final String encoding;
 
     /**
-     * Constructs a new Packet using an {@link OpCode} and {@link JsonObject}.
+     * Constructs a new Packet using an {@link OpCode} and {@link JsonValue}.
      *
      * @param op       The OpCode value of this new Packet.
-     * @param data     The JSONObject payload of this new Packet.
+     * @param data     The JsonValue payload of this new Packet.
      * @param encoding encoding to send packets as
      */
-    public Packet(OpCode op, JsonObject data, String encoding) {
+    public Packet(OpCode op, JsonValue data, String encoding) {
         this.op = op;
         this.data = data;
         this.encoding = encoding;
     }
 
     /**
-     * Constructs a new Packet using an {@link OpCode} and {@link JsonObject}.
+     * Constructs a new Packet using an {@link OpCode} and {@link JsonValue}.
      *
      * @param op   The OpCode value of this new Packet.
-     * @param data The JSONObject payload of this new Packet.
+     * @param data The JsonValue payload of this new Packet.
      */
     @Deprecated
-    public Packet(OpCode op, JsonObject data) {
+    public Packet(OpCode op, JsonValue data) {
         this(op, data, "UTF-8");
     }
 
@@ -64,7 +66,7 @@ public class Packet {
      * @return This Packet as a {@code byte} array.
      */
     public byte[] toBytes() {
-        String s = data.toString();
+        String s = data.toJson(JsonWriter.OutputType.json);
 
         byte[] d;
         try {
@@ -90,11 +92,11 @@ public class Packet {
     }
 
     /**
-     * Gets the Raw {@link JsonObject} value as a part of this {@link Packet}.
+     * Gets the Raw {@link JsonValue} value as a part of this {@link Packet}.
      *
-     * @return The JSONObject value of this Packet.
+     * @return The JsonValue value of this Packet.
      */
-    public JsonObject getJson() {
+    public JsonValue getJson() {
         return data;
     }
 

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities.pipe;
+package me.cyric.discordipc.entities.pipe;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.entities.Callback;
-import com.jagrosh.discordipc.entities.Packet;
-import com.jagrosh.discordipc.impl.WinRegistry;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.SerializationException;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.entities.Callback;
+import me.cyric.discordipc.entities.Packet;
+import me.cyric.discordipc.impl.WinRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +54,7 @@ public class WindowsPipe extends Pipe {
 
     @Override
     @SuppressWarnings("BusyWait")
-    public Packet read() throws IOException, JsonParseException {
+    public Packet read() throws IOException, SerializationException {
         while ((status == PipeStatus.CONNECTED || status == PipeStatus.CLOSING) && file.length() == 0) {
             try {
                 Thread.sleep(50);
@@ -84,7 +84,7 @@ public class WindowsPipe extends Pipe {
         }
 
         status = PipeStatus.CLOSING;
-        send(Packet.OpCode.CLOSE, new JsonObject());
+        send(Packet.OpCode.CLOSE, new JsonValue(JsonValue.ValueType.object));
         status = PipeStatus.CLOSED;
         file.close();
     }

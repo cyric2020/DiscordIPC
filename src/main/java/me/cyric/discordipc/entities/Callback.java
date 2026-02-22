@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities;
+package me.cyric.discordipc.entities;
 
-import com.jagrosh.discordipc.IPCClient;
+import me.cyric.discordipc.IPCClient;
 
 import java.util.function.Consumer;
 

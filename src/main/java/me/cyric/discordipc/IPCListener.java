@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc;
+package me.cyric.discordipc;
 
-import com.google.gson.JsonObject;
-import com.jagrosh.discordipc.entities.Packet;
-import com.jagrosh.discordipc.entities.User;
+import com.badlogic.gdx.utils.JsonValue;
+import me.cyric.discordipc.entities.Packet;
+import me.cyric.discordipc.entities.User;
 
 /**
  * An implementable listener used to handle events caught by an {@link IPCClient}.
@@ -86,9 +86,9 @@ public interface IPCListener {
      * Fired whenever an {@link IPCClient} has closed.
      *
      * @param client The now closed IPCClient.
-     * @param json   A {@link JsonObject} with close data.
+     * @param json   A {@link JsonValue} with close data.
      */
-    void onClose(IPCClient client, JsonObject json);
+    void onClose(IPCClient client, JsonValue json);
 
     /**
      * Fired whenever an {@link IPCClient} has disconnected,

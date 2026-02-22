@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.exceptions;
+package me.cyric.discordipc.exceptions;
 
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.entities.DiscordBuild;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.entities.DiscordBuild;
 
 /**
  * An exception thrown when the {@link IPCClient IPCClient}

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities.pipe;
+package me.cyric.discordipc.entities.pipe;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.IPCListener;
-import com.jagrosh.discordipc.entities.Callback;
-import com.jagrosh.discordipc.entities.DiscordBuild;
-import com.jagrosh.discordipc.entities.Packet;
-import com.jagrosh.discordipc.entities.User;
-import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.SerializationException;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.IPCListener;
+import me.cyric.discordipc.entities.Callback;
+import me.cyric.discordipc.entities.DiscordBuild;
+import me.cyric.discordipc.entities.Packet;
+import me.cyric.discordipc.entities.User;
+import me.cyric.discordipc.exceptions.NoDiscordClientException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,17 +76,17 @@ public abstract class Pipe {
                     }
                     pipe = createPipe(ipcClient, callbacks, fileLocation);
 
-                    JsonObject finalObject = new JsonObject();
+                    JsonValue finalObject = new JsonValue(JsonValue.ValueType.object);
 
-                    finalObject.addProperty("v", VERSION);
-                    finalObject.addProperty("client_id", Long.toString(clientId));
+                    finalObject.addChild("v", new JsonValue(VERSION));
+                    finalObject.addChild("client_id", new JsonValue(Long.toString(clientId)));
 
                     pipe.send(Packet.OpCode.HANDSHAKE, finalObject);
 
                     Packet p = pipe.read(); // this is a valid client at this point
 
-                    final JsonObject parsedData = p.getJson();
-                    final JsonObject data = parsedData.getAsJsonObject("data");
+                    final JsonValue parsedData = p.getJson();
+                    final JsonValue data = parsedData.get("data");
 
                     if (data == null) {
                         pipe.close();
@@ -96,18 +96,18 @@ public abstract class Pipe {
                         );
                     }
 
-                    final JsonObject userData = data.getAsJsonObject("user");
+                    final JsonValue userData = data.get("user");
 
                     pipe.build = DiscordBuild.from(data
-                            .getAsJsonObject("config")
-                            .get("api_endpoint").getAsString());
+                            .get("config")
+                            .getString("api_endpoint"));
 
                     pipe.currentUser = new User(
-                            userData.getAsJsonPrimitive("username").getAsString(),
-                            userData.has("global_name") && userData.get("global_name").isJsonPrimitive() ? userData.getAsJsonPrimitive("global_name").getAsString() : null,
-                            userData.has("discriminator") && userData.get("discriminator").isJsonPrimitive() ? userData.getAsJsonPrimitive("discriminator").getAsString() : "0",
-                            Long.parseLong(userData.getAsJsonPrimitive("id").getAsString()),
-                            userData.has("avatar") && userData.get("avatar").isJsonPrimitive() ? userData.getAsJsonPrimitive("avatar").getAsString() : null
+                            userData.getString("username"),
+                            userData.has("global_name") && userData.get("global_name").isValue() ? userData.getString("global_name") : null,
+                            userData.has("discriminator") && userData.get("discriminator").isValue() ? userData.getString("discriminator") : "0",
+                            Long.parseLong(userData.getString("id")),
+                            userData.has("avatar") && userData.get("avatar").isValue() ? userData.getString("avatar") : null
                     );
 
                     if (ipcClient.isDebugMode()) {
@@ -133,7 +133,7 @@ public abstract class Pipe {
                         ipcClient.getCurrentLogger(LOGGER).info(String.format("[DEBUG] Unable to locate IPC Pipe: \"%s\"", location));
                     }
                 }
-            } catch (IOException | JsonParseException ex) {
+            } catch (IOException | SerializationException ex) {
                 pipe = null;
             }
         }
@@ -254,10 +254,10 @@ public abstract class Pipe {
      * @param data     The data to send.
      * @param callback callback for the response
      */
-    public void send(Packet.OpCode op, JsonObject data, Callback callback) {
+    public void send(Packet.OpCode op, JsonValue data, Callback callback) {
         try {
             String nonce = generateNonce();
-            data.addProperty("nonce", nonce);
+            data.addChild("nonce", new JsonValue(nonce));
             Packet p = new Packet(op, data, ipcClient.getEncoding());
             if (callback != null && !callback.isEmpty())
                 callbacks.put(nonce, callback);
@@ -280,7 +280,7 @@ public abstract class Pipe {
      * @param op   The {@link Packet.OpCode} to send data with.
      * @param data The data to send.
      */
-    public void send(Packet.OpCode op, JsonObject data) {
+    public void send(Packet.OpCode op, JsonValue data) {
         send(op, data, null);
     }
 
@@ -293,7 +293,7 @@ public abstract class Pipe {
      */
     @SuppressWarnings("deprecation")
     public Packet receive(Packet.OpCode op, byte[] data) {
-        JsonObject packetData = new JsonParser().parse(new String(data)).getAsJsonObject();
+        JsonValue packetData = new JsonReader().parse(new String(data));
         Packet p = new Packet(op, packetData, ipcClient.getEncoding());
 
         if (ipcClient.isDebugMode()) {
@@ -311,9 +311,9 @@ public abstract class Pipe {
      *
      * @return A valid {@link Packet}.
      * @throws IOException        If the pipe breaks.
-     * @throws JsonParseException If the read thread receives bad data.
+     * @throws com.badlogic.gdx.utils.SerializationException If the read thread receives bad data.
      */
-    public abstract Packet read() throws IOException, JsonParseException;
+    public abstract Packet read() throws IOException, SerializationException;
 
     public abstract void write(byte[] b) throws IOException;
 

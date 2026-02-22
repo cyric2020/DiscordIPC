@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities.pipe;
+package me.cyric.discordipc.entities.pipe;
 
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.entities.Callback;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.entities.Callback;
 
 import java.io.File;
 import java.io.FileWriter;

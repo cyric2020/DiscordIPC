@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc;
+package me.cyric.discordipc;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.jagrosh.discordipc.entities.*;
-import com.jagrosh.discordipc.entities.Packet.OpCode;
-import com.jagrosh.discordipc.entities.pipe.Pipe;
-import com.jagrosh.discordipc.entities.pipe.PipeStatus;
-import com.jagrosh.discordipc.exceptions.NoDiscordClientException;
-import com.jagrosh.discordipc.impl.Backoff;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
+import com.badlogic.gdx.utils.SerializationException;
+import me.cyric.discordipc.entities.*;
+import me.cyric.discordipc.entities.Packet.OpCode;
+import me.cyric.discordipc.entities.pipe.Pipe;
+import me.cyric.discordipc.entities.pipe.PipeStatus;
+import me.cyric.discordipc.exceptions.NoDiscordClientException;
+import me.cyric.discordipc.impl.Backoff;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -448,16 +450,18 @@ public final class IPCClient implements Closeable {
             getCurrentLogger(LOGGER).info("[DEBUG] Sending RichPresence to discord: " + (presence == null ? null : presence.toDecodedJson(encoding)));
         }
 
-        // Setup and Send JsonObject Data Representing an RPC Update
-        JsonObject finalObject = new JsonObject(),
-                args = new JsonObject();
+        // Setup and Send JsonValue Data Representing an RPC Update
+        JsonValue finalObject = new JsonValue(JsonValue.ValueType.object);
+        JsonValue args = new JsonValue(JsonValue.ValueType.object);
 
-        finalObject.addProperty("cmd", "SET_ACTIVITY");
+        finalObject.addChild("cmd", new JsonValue("SET_ACTIVITY"));
 
-        args.addProperty("pid", getPID());
-        args.add("activity", presence == null ? null : presence.toJson());
+        args.addChild("pid", new JsonValue(getPID()));
+        // TODO: this might cause issues
+//        args.add("activity", presence == null ? null : presence.toJson());
+        args.addChild("activity", new JsonValue(presence == null ? new JsonValue(JsonValue.ValueType.nullValue) : presence.toJson()));
 
-        finalObject.add("args", args);
+        finalObject.addChild("args", args);
         pipe.send(OpCode.FRAME, finalObject, callback);
     }
 
@@ -521,9 +525,9 @@ public final class IPCClient implements Closeable {
             getCurrentLogger(LOGGER).info(String.format("[DEBUG] Subscribing to Event: %s", sub.name()));
         }
 
-        JsonObject pipeData = new JsonObject();
-        pipeData.addProperty("cmd", "SUBSCRIBE");
-        pipeData.addProperty("evt", sub.name());
+        JsonValue pipeData = new JsonValue(JsonValue.ValueType.object);
+        pipeData.addChild("cmd", new JsonValue("SUBSCRIBE"));
+        pipeData.addChild("evt", new JsonValue(sub.name()));
 
         pipe.send(OpCode.FRAME, pipeData, callback);
     }
@@ -543,13 +547,13 @@ public final class IPCClient implements Closeable {
                 getCurrentLogger(LOGGER).info(String.format("[DEBUG] Sending response to %s as %s", user.getName(), approvalMode.name()));
             }
 
-            JsonObject pipeData = new JsonObject();
-            pipeData.addProperty("cmd", approvalMode == ApprovalMode.ACCEPT ? "SEND_ACTIVITY_JOIN_INVITE" : "CLOSE_ACTIVITY_JOIN_REQUEST");
+            JsonValue pipeData = new JsonValue(JsonValue.ValueType.object);
+            pipeData.addChild("cmd", new JsonValue(approvalMode == ApprovalMode.ACCEPT ? "SEND_ACTIVITY_JOIN_INVITE" : "CLOSE_ACTIVITY_JOIN_REQUEST"));
 
-            JsonObject args = new JsonObject();
-            args.addProperty("user_id", user.getId());
+            JsonValue args = new JsonValue(JsonValue.ValueType.object);
+            args.addChild("user_id", new JsonValue(user.getId()));
 
-            pipeData.add("args", args);
+            pipeData.addChild("args", args);
 
             pipe.send(OpCode.FRAME, pipeData, callback);
         }
@@ -674,11 +678,11 @@ public final class IPCClient implements Closeable {
         try {
             Packet p;
             while ((p = pipe.read()).getOp() != OpCode.CLOSE) {
-                JsonObject json = p.getJson();
+                JsonValue json = p.getJson();
 
                 if (json != null) {
-                    Event event = Event.of(json.has("evt") && !json.get("evt").isJsonNull() ? json.getAsJsonPrimitive("evt").getAsString() : null);
-                    String nonce = json.has("nonce") && !json.get("nonce").isJsonNull() ? json.getAsJsonPrimitive("nonce").getAsString() : null;
+                    Event event = Event.of(json.has("evt") && !json.get("evt").isNull() ? json.getString("evt") : null);
+                    String nonce = json.has("nonce") && !json.get("nonce").isNull() ? json.getString("nonce") : null;
 
                     switch (event) {
                         case NULL:
@@ -688,7 +692,7 @@ public final class IPCClient implements Closeable {
 
                         case ERROR:
                             if (nonce != null && callbacks.containsKey(nonce))
-                                callbacks.remove(nonce).fail(json.has("data") && json.getAsJsonObject("data").has("message") ? json.getAsJsonObject("data").getAsJsonObject("message").getAsString() : null);
+                                callbacks.remove(nonce).fail(json.has("data") && json.get("data").has("message") ? json.get("data").getString("message") : null);
                             break;
 
                         case ACTIVITY_JOIN:
@@ -712,35 +716,35 @@ public final class IPCClient implements Closeable {
                         case UNKNOWN:
                             if (debugMode) {
                                 getCurrentLogger(LOGGER).info("[DEBUG] Reading thread encountered an event with an unknown type: " +
-                                        json.getAsJsonPrimitive("evt").getAsString());
+                                        json.getString("evt"));
                             }
                             break;
                         default:
                             break;
                     }
 
-                    if (listener != null && json.has("cmd") && json.getAsJsonPrimitive("cmd").getAsString().equals("DISPATCH")) {
+                    if (listener != null && json.has("cmd") && json.getString("cmd").equals("DISPATCH")) {
                         try {
-                            JsonObject data = json.getAsJsonObject("data");
-                            switch (Event.of(json.getAsJsonPrimitive("evt").getAsString())) {
+                            JsonValue data = json.get("data");
+                            switch (Event.of(json.getString("evt"))) {
                                 case ACTIVITY_JOIN:
-                                    listener.onActivityJoin(instance, data.getAsJsonPrimitive("secret").getAsString());
+                                    listener.onActivityJoin(instance, data.getString("secret"));
                                     break;
 
                                 case ACTIVITY_SPECTATE:
-                                    listener.onActivitySpectate(instance, data.getAsJsonPrimitive("secret").getAsString());
+                                    listener.onActivitySpectate(instance, data.getString("secret"));
                                     break;
 
                                 case ACTIVITY_JOIN_REQUEST:
-                                    final JsonObject u = data.getAsJsonObject("user");
+                                    final JsonValue u = data.get("user");
                                     final User user = new User(
-                                            u.getAsJsonPrimitive("username").getAsString(),
-                                            u.has("global_name") && u.get("global_name").isJsonPrimitive() ? u.getAsJsonPrimitive("global_name").getAsString() : null,
-                                            u.has("discriminator") && u.get("discriminator").isJsonPrimitive() ? u.getAsJsonPrimitive("discriminator").getAsString() : "0",
-                                            Long.parseLong(u.getAsJsonPrimitive("id").getAsString()),
-                                            u.has("avatar") && u.get("avatar").isJsonPrimitive() ? u.getAsJsonPrimitive("avatar").getAsString() : null
+                                            u.getString("username"),
+                                            u.has("global_name") && u.get("global_name").isValue() ? u.getString("global_name") : null,
+                                            u.has("discriminator") && u.get("discriminator").isValue() ? u.getString("discriminator") : "0",
+                                            Long.parseLong(u.getString("id")),
+                                            u.has("avatar") && u.get("avatar").isValue() ? u.getString("avatar") : null
                                     );
-                                    listener.onActivityJoinRequest(instance, data.has("secret") ? data.getAsJsonObject("secret").getAsString() : null, user);
+                                    listener.onActivityJoinRequest(instance, data.has("secret") ? data.getString("secret") : null, user);
                                     break;
                                 default:
                                     break;
@@ -754,7 +758,7 @@ public final class IPCClient implements Closeable {
             pipe.setStatus(PipeStatus.DISCONNECTED);
             if (listener != null)
                 listener.onClose(instance, p.getJson());
-        } catch (IOException | JsonParseException ex) {
+        } catch (IOException | SerializationException ex) {
             getCurrentLogger(LOGGER).error(String.format("Reading thread encountered an Exception: %s", ex));
 
             pipe.setStatus(PipeStatus.DISCONNECTED);

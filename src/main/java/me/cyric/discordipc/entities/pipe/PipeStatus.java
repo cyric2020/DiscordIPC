@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities.pipe;
+package me.cyric.discordipc.entities.pipe;
 
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.IPCListener;
-import com.jagrosh.discordipc.entities.DiscordBuild;
-import com.jagrosh.discordipc.entities.Packet;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.IPCListener;
+import me.cyric.discordipc.entities.DiscordBuild;
+import me.cyric.discordipc.entities.Packet;
 
 /**
  * Constants representing various status that an {@link IPCClient} can have.

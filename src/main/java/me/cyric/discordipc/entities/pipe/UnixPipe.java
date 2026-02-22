@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities.pipe;
+package me.cyric.discordipc.entities.pipe;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.entities.Callback;
-import com.jagrosh.discordipc.entities.Packet;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.SerializationException;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.entities.Callback;
+import me.cyric.discordipc.entities.Packet;
 import org.newsclub.net.unix.AFUNIXSocket;
 import org.newsclub.net.unix.AFUNIXSocketAddress;
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class UnixPipe extends Pipe {
 
     @Override
     @SuppressWarnings("BusyWait")
-    public Packet read() throws IOException, JsonParseException {
+    public Packet read() throws IOException, SerializationException {
         InputStream is = socket.getInputStream();
 
         while ((status == PipeStatus.CONNECTED || status == PipeStatus.CLOSING) && is.available() == 0) {
@@ -97,7 +97,7 @@ public class UnixPipe extends Pipe {
         }
 
         status = PipeStatus.CLOSING;
-        send(Packet.OpCode.CLOSE, new JsonObject());
+        send(Packet.OpCode.CLOSE, new JsonValue(JsonValue.ValueType.object));
         status = PipeStatus.CLOSED;
         socket.close();
     }

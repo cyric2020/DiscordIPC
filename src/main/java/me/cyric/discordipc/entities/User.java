@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.jagrosh.discordipc.entities;
+package me.cyric.discordipc.entities;
 
-import com.jagrosh.discordipc.IPCClient;
-import com.jagrosh.discordipc.IPCListener;
+import me.cyric.discordipc.IPCClient;
+import me.cyric.discordipc.IPCListener;
 
 /**
  * An encapsulation of a Discord User's data provided when a
