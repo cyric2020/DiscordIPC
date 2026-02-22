@@ -23,26 +23,15 @@ Connect locally to the Discord client using IPC for a subset of RPC features lik
 First you'll need to add this project as a dependency. If you're using maven:
 ```xml
   <dependency>
-    <groupId>com.jagrosh</groupId>
+    <groupId>me.cyric</groupId>
     <artifactId>DiscordIPC</artifactId>
     <version>LATEST</version>
   </dependency>
 ```
-```xml
-  <repository>
-    <id>central</id>
-    <name>bintray</name>
-    <url>https://jcenter.bintray.com</url>
-  </repository>
-```
 With gradle:
 ```groovy
 dependencies {
-    compile 'com.jagrosh:DiscordIPC:LATEST'
-}
-
-repositories {
-    jcenter()
+    compile 'me.cyric:DiscordIPC:LATEST'
 }
 ```
 
