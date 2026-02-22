@@ -5,8 +5,35 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>me.cyric</groupId>
     <artifactId>DiscordIPC</artifactId>
-    <version>0.6.0</version>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
+
+    <!-- Metadata -->
+    <name>DiscordIPC (LibGDX)</name>
+    <description>LibGDX-compatible fork of DiscordIPC library with LibGDX json</description>
+    <url>https://github.com/cyric2020/DiscordIPC</url>
+
+    <licenses>
+        <license>
+            <name>Apache License 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>cyric</id>
+            <name>Jordan</name>
+            <email>jordan@cyric.me</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/cyric2020/DiscordIPC.git</connection>
+        <developerConnection>scm:git:ssh://github.com/cyric2020/DiscordIPC.git</developerConnection>
+        <url>https://github.com/cyric2020/DiscordIPC.git</url>
+    </scm>
 
     <dependencies>
         <!-- Source: https://mvnrepository.com/artifact/com.badlogicgames.gdx/gdx -->
@@ -48,7 +75,7 @@
                     <execution>
                         <id>attach-sources</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -66,6 +93,37 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- GPG Signing -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.7</version>
+                <configuration>
+                    <executable>C:/Program Files/GnuPG/bin/gpg.exe</executable>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Sonatype Central Publishing -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -74,5 +132,4 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
-    <name>DiscordIPC</name>
 </project>
